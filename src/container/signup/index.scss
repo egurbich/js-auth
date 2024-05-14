@@ -1,0 +1,10 @@
+@use '../../style' as s;
+
+@use '../../style/form.scss' as form;
+
+
+main {
+	background: s.color(dark);
+	color: s.color(light);
+	padding: s.space(4);
+} 
