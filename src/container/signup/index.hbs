@@ -1,0 +1,36 @@
+<div class="page page--background">
+    <header>
+        {{> back-button}}
+    </header>
+
+    <form class="page__section">
+        <h1 class="page__title">Реєстрація</h1>
+
+        <div class="form">
+            <div class="form__item">
+                {{> field action="signupForm.change" name="email" label="Ел. адреса" type="email" placeholder="Ваш e-mail"}}
+                <span name="email" class="form__error">Помилка</span>                
+            </div>
+            <div class="form__item">
+                {{> field-password action="signupForm.change" name="password" label="Пароль" type="password" placeholder="Введіть пароль"}}
+                <span name="password" class="form__error">Помилка</span>                
+            </div>
+            <div class="form__item">
+                {{> field-password action="signupForm.change" name="passwordAgain" label="Пароль ще раз" type="password" placeholder="Введіть пароль ще раз"}}
+                <span name="passwordAgain" class="form__error">Помилка</span>                
+            </div>  
+            <div class="form__item">
+                {{> field-select action="signupForm.change" name="role" label="Роль" placeholder="Роль" list=data.role}}
+                <span name="role" class="form__error">Помилка</span>                
+            </div>                     
+            <div class="form__item">
+                {{> field-checkbox action="signupForm.change" name="isConfirm" label="Ви погоджуєтеся з правилами сервіса" placeholder="Ви погоджуєтеся з правилами сервіса"}}
+                <span name="isConfirm" class="form__error">Помилка</span>                
+            </div>                 
+        </div>
+
+        <button onclick="signupForm.submit()" class="button button--disabled" type="button">Зареєструватися</button>
+
+        <span class="alert alert--disabled">Увага, помилка!</span>
+    </form>
+</div>
