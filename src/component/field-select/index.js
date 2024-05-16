@@ -30,7 +30,7 @@ class FieldSelect {
 
     if (value) {
       value.innerText = target.innerText
-      value.classList.remove('field__value--palceholder')
+      value.classList.remove('field__value--placeholder')
     }
 
     const list = target.parentElement
