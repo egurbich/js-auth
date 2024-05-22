@@ -7,6 +7,7 @@ const router = express.Router()
 
 const { User } = require('../class/user')
 const { Confirm } = require('../class/confirm')
+const { Session } = require('../class/session')
 
 User.create({
   email: 'test@i.com',
@@ -77,14 +78,19 @@ router.post('/signup', function (req, res) {
           'Помилка. Користувач з таким email вже існує',
       })
     }
-    User.create({ email, password, role })
+    const newUser = User.create({ email, password, role })
+
+    const session = Session.create(newUser)
+
+    Confirm.create(newUser.email)
 
     return res.status(200).json({
       message: 'Користувач успішно зареєстрований',
+      session,
     })
   } catch (e) {
     return res.status(400).json({
-      message: 'Помилка створення користувача.',
+      message: 'Помилка створення користувача.' + e.message,
     })
   }
 })
@@ -145,8 +151,6 @@ router.get('/recovery-confirm', function (req, res) {
 router.post('/recovery-confirm', function (req, res) {
   const { password, code } = req.body
 
-  console.log(password, code)
-
   if (!code || !password) {
     return res.status(400).json({
       message: "Помилка. Обов'язкові поля відсутні",
@@ -154,9 +158,7 @@ router.post('/recovery-confirm', function (req, res) {
   }
 
   try {
-    console.log('------------start----------')
     const email = Confirm.getData(Number(code))
-    console.log('email: ' + email)
     if (!email) {
       return res.status(400).json({
         message: 'Код не існує',
@@ -171,15 +173,15 @@ router.post('/recovery-confirm', function (req, res) {
       })
     }
 
-    console.log('test1: ' + user)
     user.password = password
-    console.log('test2: ' + user)
+
+    const session = Session.create(user)
 
     return res.status(200).json({
       message: 'Пароль змінено',
+      session,
     })
   } catch (e) {
-    console.log(e)
     return res.status(400).json({
       message: 'Помилка: ' + e.message,
     })
@@ -187,6 +189,118 @@ router.post('/recovery-confirm', function (req, res) {
 })
 
 // =======================================================
+
+router.get('/signup-confirm', function (req, res) {
+  const { renew, email } = req.query
+
+  if (renew) {
+    Confirm.create(email)
+  }
+
+  res.render('signup-confirm', {
+    name: 'signup-confirm',
+    component: ['back-button', 'field', 'field-password'],
+    title: 'Signup confirm page',
+    data: {},
+  })
+})
+
+router.post('/signup-confirm', function (req, res) {
+  const { code, token } = req.body
+
+  if (!code || !token) {
+    return res.status(400).json({
+      message: "Помилка. Обов'язкові поля відсутні",
+    })
+  }
+
+  try {
+    const session = Session.get(token)
+
+    if (!session) {
+      return res.status(400).json({
+        message: 'Помилка. Ви не увійшли в акаунт',
+      })
+    }
+
+    const email = Confirm.getData(code)
+
+    if (!email) {
+      return res.status(400).json({
+        message: 'Помилка. Код не існує',
+      })
+    }
+
+    if (email !== session.user.email) {
+      return res.status(400).json({
+        message: 'Код не дійсний',
+      })
+    }
+
+    // const user = User.getByEmail(session.user.email)
+    // user.isConfirm = true
+
+    session.user.isConfirm = true
+
+    return res.status(200).json({
+      message: 'Ви підтвердили свою пошту',
+      session,
+    })
+  } catch (e) {
+    return res.status(400).json({
+      message: 'Помилка: ' + e.message,
+    })
+  }
+})
+
+// =======================================================
+
+// Enter
+router.get('/login', function (req, res) {
+  res.render('login', {
+    name: 'login',
+    component: ['back-button', 'field'],
+    title: 'Login page',
+    data: {},
+  })
+})
+
+router.post('/login', function (req, res) {
+  const { email, password } = req.body
+
+  if (!email || !password) {
+    return res.status(400).json({
+      message: "Помилка. Обов'язкові поля відсутні",
+    })
+  }
+
+  try {
+    const user = User.getByEmail(email)
+
+    if (!user) {
+      return res.status(400).json({
+        message: 'Користувач з таким емайлом не існує',
+      })
+    }
+
+    if (user.password !== password) {
+      return res.status(400).json({
+        message: 'Пароль не підходить',
+      })
+    }
+
+    const session = Session.create(user)
+
+    return res.status(200).json({
+      message: 'Ви увійшли',
+      session,
+    })
+  } catch (e) {
+    return res.status(400).json({
+      message: e.message,
+    })
+  }
+})
 
 // Підключаємо роутер до бек-енду
 module.exports = router
