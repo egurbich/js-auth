@@ -87,3 +87,17 @@
 .link__prefix {
   color: s.color(light);
 }
+
+.skeleton {
+  animation: skeleton-animation 1s infinite alternate;
+}
+
+@keyframes skeleton-animation {
+  from {
+    background-color: (0, 0, 0, 0.05);
+  }
+
+  to {
+    background-color: (0, 0, 0, 0.15);
+  }
+}
